@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(gst_webrtc_client VERSION 0.0.1)
-
-set(CMAKE_CXX_STANDARD 17)
+project(gst_webrtc_client LANGUAGES C VERSION 0.0.1)
 
 option(USE_LIBSOUP2 "Use libsoup2.4 instead of libsoup3.0" OFF)
 set(USE_LIBSOUP2 ON)

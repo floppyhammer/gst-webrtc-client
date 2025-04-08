@@ -26,6 +26,7 @@ static GOptionEntry options[] = {
     {NULL}
 };
 
+// If you don't have a local network, use `adb forward tcp:8080 tcp:8080` to map Android port
 #define WEBSOCKET_URI_DEFAULT "ws://127.0.0.1:8080/ws"
 
 struct MyState {
@@ -44,26 +45,26 @@ struct MyState ws_state = {};
  */
 
 static void
-data_channel_error_cb(GstWebRTCDataChannel *datachannel, void *data) {
+data_channel_error_cb(GstWebRTCDataChannel *data_channel, void *data) {
     g_print("Data channel error\n");
     abort();
 }
 
 static void
-data_channel_close_cb(GstWebRTCDataChannel *datachannel, gpointer timeout_src_id) {
+data_channel_close_cb(GstWebRTCDataChannel *data_channel, gpointer timeout_src_id) {
     g_print("Data channel closed\n");
 
     g_source_remove(GPOINTER_TO_UINT(timeout_src_id));
-    g_clear_object(&datachannel);
+    g_clear_object(&data_channel);
 }
 
 static void
-data_channel_message_data_cb(GstWebRTCDataChannel *datachannel, GBytes *data, void *user_data) {
+data_channel_message_data_cb(GstWebRTCDataChannel *data_channel, GBytes *data, void *user_data) {
     g_print("Received data channel message data, size: %u\n", (uint32_t) g_bytes_get_size(data));
 }
 
 static void
-data_channel_message_string_cb(GstWebRTCDataChannel *datachannel, gchar *str, void *user_data) {
+data_channel_message_string_cb(GstWebRTCDataChannel *data_channel, gchar *str, void *user_data) {
     g_print("Received data channel message string: %s\n", str);
 }
 
@@ -78,7 +79,7 @@ static void
 webrtc_on_data_channel_cb(GstElement *webrtcbin, GstWebRTCDataChannel *new_data_channel, void *user_data) {
     guint timeout_src_id;
 
-    g_print("Successfully created datachannel\n");
+    g_print("Successfully created data channel\n");
 
     g_assert_null(ws_state.data_channel);
     ws_state.data_channel = GST_WEBRTC_DATA_CHANNEL(new_data_channel);
