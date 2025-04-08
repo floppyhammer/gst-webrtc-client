@@ -1,3 +1,7 @@
+# GStreamer WebRTC Client
+
+This is a test client on Linux. See the compatible [server](https://github.com/floppyhammer/gst-webrtc-server).
+
 ## Build Dependencies
 
 ```sh
