@@ -13,6 +13,11 @@
 
 static gchar *websocket_uri = NULL;
 
+// If you don't have a local network, use `adb forward tcp:8080 tcp:8080` to map Android port
+// #define WEBSOCKET_URI_DEFAULT "ws://10.11.9.147:8080/ws"
+// #define WEBSOCKET_URI_DEFAULT "ws://10.11.9.210:8080/ws"
+#define WEBSOCKET_URI_DEFAULT "ws://127.0.0.1:8080/ws"
+
 static GOptionEntry options[] = {
     {
         "websocket-uri",
@@ -25,9 +30,6 @@ static GOptionEntry options[] = {
     },
     {NULL}
 };
-
-// If you don't have a local network, use `adb forward tcp:8080 tcp:8080` to map Android port
-#define WEBSOCKET_URI_DEFAULT "ws://127.0.0.1:8080/ws"
 
 struct MyState {
     SoupWebsocketConnection *connection;
@@ -60,17 +62,28 @@ data_channel_close_cb(GstWebRTCDataChannel *data_channel, gpointer timeout_src_i
 
 static void
 data_channel_message_data_cb(GstWebRTCDataChannel *data_channel, GBytes *data, void *user_data) {
-    g_print("Received data channel message data, size: %u\n", (uint32_t) g_bytes_get_size(data));
+    uint32_t data_size = g_bytes_get_size(data);
+    g_print("Received data channel message data, size: %u\n", data_size);
 }
 
 static void
 data_channel_message_string_cb(GstWebRTCDataChannel *data_channel, gchar *str, void *user_data) {
-    g_print("Received data channel message string: %s\n", str);
+    // Save remote dot file
+    if (strlen(str) > 1000) {
+        g_print("Received remote dot file\n");
+
+        FILE *fptr;
+        fptr = fopen("remote_pipeline.dot", "w");
+        fwrite(str, strlen(str), 1, fptr);
+        fclose(fptr);
+    } else {
+        g_print("Received data channel message string: %s\n", str);
+    }
 }
 
 static gboolean
 data_channel_send_message(gpointer unused) {
-    g_signal_emit_by_name(ws_state.data_channel, "send-string", "Hi! from EMS test client");
+    g_signal_emit_by_name(ws_state.data_channel, "send-string", "Hi! from test client");
 
     return G_SOURCE_CONTINUE;
 }
