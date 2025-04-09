@@ -14,9 +14,9 @@
 static gchar *websocket_uri = NULL;
 
 // If you don't have a local network, use `adb forward tcp:8080 tcp:8080` to map Android port
-// #define WEBSOCKET_URI_DEFAULT "ws://10.11.9.147:8080/ws"
+#define WEBSOCKET_URI_DEFAULT "ws://10.11.9.147:8080/ws"
 // #define WEBSOCKET_URI_DEFAULT "ws://10.11.9.210:8080/ws"
-#define WEBSOCKET_URI_DEFAULT "ws://127.0.0.1:8080/ws"
+// #define WEBSOCKET_URI_DEFAULT "ws://127.0.0.1:8080/ws"
 
 static GOptionEntry options[] = {
     {
@@ -72,8 +72,7 @@ data_channel_message_string_cb(GstWebRTCDataChannel *data_channel, gchar *str, v
     if (strlen(str) > 1000) {
         g_print("Received remote dot file\n");
 
-        FILE *fptr;
-        fptr = fopen("remote_pipeline.dot", "w");
+        FILE *fptr = fopen("remote_pipeline.dot", "w");
         fwrite(str, strlen(str), 1, fptr);
         fclose(fptr);
     } else {
@@ -90,14 +89,12 @@ data_channel_send_message(gpointer unused) {
 
 static void
 webrtc_on_data_channel_cb(GstElement *webrtcbin, GstWebRTCDataChannel *new_data_channel, void *user_data) {
-    guint timeout_src_id;
-
     g_print("Successfully created data channel\n");
 
     g_assert_null(ws_state.data_channel);
     ws_state.data_channel = GST_WEBRTC_DATA_CHANNEL(new_data_channel);
 
-    timeout_src_id = g_timeout_add_seconds(3, data_channel_send_message, NULL);
+    guint timeout_src_id = g_timeout_add_seconds(3, data_channel_send_message, NULL);
 
     g_signal_connect(new_data_channel, "on-close", G_CALLBACK(data_channel_close_cb), GUINT_TO_POINTER(timeout_src_id));
     g_signal_connect(new_data_channel, "on-error", G_CALLBACK(data_channel_error_cb), GUINT_TO_POINTER(timeout_src_id));
@@ -153,13 +150,11 @@ gst_bus_cb(GstBus *bus, GstMessage *message, gpointer data) {
 
 void
 send_sdp_answer(const gchar *sdp) {
-    JsonBuilder *builder;
-    JsonNode *root;
     gchar *msg_str;
 
     g_print("Send answer: %s\n", sdp);
 
-    builder = json_builder_new();
+    JsonBuilder *builder = json_builder_new();
     json_builder_begin_object(builder);
     json_builder_set_member_name(builder, "msg");
     json_builder_add_string_value(builder, "answer");
@@ -168,7 +163,7 @@ send_sdp_answer(const gchar *sdp) {
     json_builder_add_string_value(builder, sdp);
     json_builder_end_object(builder);
 
-    root = json_builder_get_root(builder);
+    JsonNode *root = json_builder_get_root(builder);
 
     msg_str = json_to_string(root, TRUE);
     soup_websocket_connection_send_text(ws_state.connection, msg_str);
@@ -181,15 +176,11 @@ send_sdp_answer(const gchar *sdp) {
 
 static gchar *
 get_string_from_json_object(JsonObject *object) {
-    JsonNode *root;
-    JsonGenerator *generator;
-    gchar *text;
-
     /* Make it the root node */
-    root = json_node_init_object(json_node_alloc(), object);
-    generator = json_generator_new();
+    JsonNode *root = json_node_init_object(json_node_alloc(), object);
+    JsonGenerator *generator = json_generator_new();
     json_generator_set_root(generator, root);
-    text = json_generator_to_data(generator, NULL);
+    gchar *text = json_generator_to_data(generator, NULL);
 
     /* Release everything */
     g_object_unref(generator);
@@ -199,18 +190,15 @@ get_string_from_json_object(JsonObject *object) {
 
 static void
 send_sdp_offer(GstElement *webrtcbin, GstWebRTCSessionDescription *offer) {
-    gchar *text;
-    JsonObject *msg, *sdp;
-
-    text = gst_sdp_message_as_text(offer->sdp);
+    gchar *text = gst_sdp_message_as_text(offer->sdp);
     g_print("Sending offer:\n%s\n", text);
 
-    sdp = json_object_new();
+    JsonObject *sdp = json_object_new();
     json_object_set_string_member(sdp, "type", "offer");
     json_object_set_string_member(sdp, "sdp", text);
     g_free(text);
 
-    msg = json_object_new();
+    JsonObject *msg = json_object_new();
     json_object_set_object_member(msg, "sdp", sdp);
     text = get_string_from_json_object(msg);
     json_object_unref(msg);
@@ -223,11 +211,10 @@ send_sdp_offer(GstElement *webrtcbin, GstWebRTCSessionDescription *offer) {
 static void
 on_offer_created(GstPromise *promise, gpointer user_data) {
     GstWebRTCSessionDescription *offer = NULL;
-    GstElement *webrtcbin = (GstElement *) user_data;
-    const GstStructure *reply;
+    GstElement *webrtcbin = user_data;
 
     g_assert(gst_promise_wait(promise) == GST_PROMISE_RESULT_REPLIED);
-    reply = gst_promise_get_reply(promise);
+    const GstStructure *reply = gst_promise_get_reply(promise);
     gst_structure_get(reply, "offer", GST_TYPE_WEBRTC_SESSION_DESCRIPTION, &offer, NULL);
     gst_promise_unref(promise);
 
@@ -243,13 +230,11 @@ on_offer_created(GstPromise *promise, gpointer user_data) {
 
 static void
 webrtc_on_ice_candidate_cb(GstElement *webrtcbin, guint mlineindex, gchar *candidate) {
-    JsonBuilder *builder;
-    JsonNode *root;
     gchar *msg_str;
 
     g_print("Send candidate: %u %s\n", mlineindex, candidate);
 
-    builder = json_builder_new();
+    JsonBuilder *builder = json_builder_new();
     json_builder_begin_object(builder);
     json_builder_set_member_name(builder, "msg");
     json_builder_add_string_value(builder, "candidate");
@@ -263,7 +248,7 @@ webrtc_on_ice_candidate_cb(GstElement *webrtcbin, guint mlineindex, gchar *candi
     json_builder_end_object(builder);
     json_builder_end_object(builder);
 
-    root = json_builder_get_root(builder);
+    JsonNode *root = json_builder_get_root(builder);
 
     msg_str = json_to_string(root, TRUE);
     soup_websocket_connection_send_text(ws_state.connection, msg_str);
@@ -276,7 +261,6 @@ webrtc_on_ice_candidate_cb(GstElement *webrtcbin, guint mlineindex, gchar *candi
 static void
 on_answer_created(GstPromise *promise, gpointer user_data) {
     GstWebRTCSessionDescription *answer = NULL;
-    gchar *sdp;
 
     gst_structure_get(gst_promise_get_reply(promise), "answer", GST_TYPE_WEBRTC_SESSION_DESCRIPTION, &answer, NULL);
     gst_promise_unref(promise);
@@ -284,7 +268,7 @@ on_answer_created(GstPromise *promise, gpointer user_data) {
 
     g_signal_emit_by_name(ws_state.webrtcbin, "set-local-description", answer, NULL);
 
-    sdp = gst_sdp_message_as_text(answer->sdp);
+    gchar *sdp = gst_sdp_message_as_text(answer->sdp);
     send_sdp_answer(sdp);
     g_free(sdp);
 
@@ -305,9 +289,7 @@ process_sdp_offer(const gchar *sdp) {
 
     desc = gst_webrtc_session_description_new(GST_WEBRTC_SDP_TYPE_OFFER, sdp_msg);
     if (desc) {
-        GstPromise *promise;
-
-        promise = gst_promise_new();
+        GstPromise *promise = gst_promise_new();
 
         g_signal_emit_by_name(ws_state.webrtcbin, "set-remote-description", desc, promise);
 
@@ -341,23 +323,20 @@ message_cb(SoupWebsocketConnection *connection, gint type, GBytes *message, gpoi
 
     if (json_parser_load_from_data(parser, msg_data, length, &error)) {
         JsonObject *msg = json_node_get_object(json_parser_get_root(parser));
-        const gchar *msg_type;
 
         if (!json_object_has_member(msg, "msg")) {
             // Invalid message
             goto out;
         }
 
-        msg_type = json_object_get_string_member(msg, "msg");
+        const gchar *msg_type = json_object_get_string_member(msg, "msg");
         g_print("Websocket message received: %s\n", msg_type);
 
         if (g_str_equal(msg_type, "offer")) {
             const gchar *offer_sdp = json_object_get_string_member(msg, "sdp");
             process_sdp_offer(offer_sdp);
         } else if (g_str_equal(msg_type, "candidate")) {
-            JsonObject *candidate;
-
-            candidate = json_object_get_object_member(msg, "candidate");
+            JsonObject *candidate = json_object_get_object_member(msg, "candidate");
 
             process_candidate(json_object_get_int_member(candidate, "sdpMLineIndex"),
                               json_object_get_string_member(candidate, "candidate"));
@@ -412,14 +391,12 @@ websocket_connected_cb(GObject *session, GAsyncResult *res, gpointer user_data) 
 
 int
 main(int argc, char *argv[]) {
-    GOptionContext *option_context;
     GMainLoop *loop;
-    SoupSession *soup_session;
     GError *error = NULL;
 
     gst_init(&argc, &argv);
 
-    option_context = g_option_context_new(NULL);
+    GOptionContext *option_context = g_option_context_new(NULL);
     g_option_context_add_main_entries(option_context, options, NULL);
 
     if (!g_option_context_parse(option_context, &argc, &argv, &error)) {
@@ -431,7 +408,7 @@ main(int argc, char *argv[]) {
         websocket_uri = g_strdup(WEBSOCKET_URI_DEFAULT);
     }
 
-    soup_session = soup_session_new();
+    SoupSession *soup_session = soup_session_new();
 
 #if !SOUP_CHECK_VERSION(3, 0, 0)
     soup_session_websocket_connect_async(soup_session, // session
