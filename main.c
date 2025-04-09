@@ -1,10 +1,9 @@
-#include <glib-unix.h>
 #include <gst/gst.h>
 
 #define GST_USE_UNSTABLE_API
 #include <stdint.h>
 #include <gst/webrtc/webrtc.h>
-
+#include <gst/sdp/sdp.h>
 #include <libsoup/soup-message.h>
 #include <libsoup/soup-session.h>
 
@@ -432,7 +431,9 @@ main(int argc, char *argv[]) {
 #endif
 
     loop = g_main_loop_new(NULL, FALSE);
-    g_unix_signal_add(SIGINT, sigint_handler, loop);
+#ifdef __linux__
+    // g_unix_signal_add(SIGINT, sigint_handler, loop);
+#endif
 
     g_main_loop_run(loop);
     g_main_loop_unref(loop);

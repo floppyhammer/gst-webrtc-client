@@ -2,7 +2,7 @@
 
 This is a test client on Linux. See the compatible [server](https://github.com/floppyhammer/gst-webrtc-server).
 
-## Build Dependencies
+## Get Dependencies
 
 ```sh
 sudo apt install libeigen3-dev \
@@ -32,9 +32,13 @@ apt info gstreamer1.0-plugins-good | grep libsoup-3.0
 ```
 
 - If so, you can use libsoup3:
-    - `libsoup-3.0-dev`
+  - `libsoup-3.0-dev`
 - Otherwise, you must use libsoup 2:
-    - `libsoup2.4-dev`
-    - In this case, you must also pass `-DUSE_LIBSOUP2=ON` to CMake.
+  - `libsoup2.4-dev`
+  - In this case, you must also pass `-DUSE_LIBSOUP2=ON` to CMake.
 
 Best to only have one of the two libsoup dev packages installed at a time.
+
+## Get Dependencies (Windows)
+
+Download binaries from https://gstreamer.freedesktop.org/download/#windows.
