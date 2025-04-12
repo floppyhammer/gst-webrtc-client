@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(gst_webrtc_client LANGUAGES C VERSION 0.0.1)
 
-option(USE_LIBSOUP2 "Use libsoup2.4 instead of libsoup3.0" OFF)
-
-find_package(PkgConfig REQUIRED)
-
 if (UNIX)
+    option(USE_LIBSOUP2 "Use libsoup2.4 instead of libsoup3.0" OFF)
+
+    find_package(PkgConfig REQUIRED)
+
     pkg_check_modules(GLIB REQUIRED glib-2.0)
     pkg_check_modules(GST REQUIRED gstreamer-1.0)
     pkg_check_modules(GST_SDP REQUIRED gstreamer-sdp-1.0)
@@ -27,23 +27,21 @@ else ()
     set(GST_LIB_ROOT "${GST_ROOT}\\lib")
 
     set(GST_INCLUDE_DIRS "${GST_ROOT}\\include\\gstreamer-1.0")
-    set(GST_LIBRARIES "${GST_LIB_ROOT}\\libgstreamer-1.0.dll.a")
-
-    set(GST_SDP_LIBRARIES "${GST_LIB_ROOT}\\libgstsdp-1.0.dll.a")
-
-    set(GST_WEBRTC_LIBRARIES "${GST_LIB_ROOT}\\libgstwebrtc-1.0.dll.a")
+    set(GST_LIBRARIES "${GST_LIB_ROOT}\\gstreamer-1.0.lib")
+    set(GST_SDP_LIBRARIES "${GST_LIB_ROOT}\\gstsdp-1.0.lib")
+    set(GST_WEBRTC_LIBRARIES "${GST_LIB_ROOT}\\gstwebrtc-1.0.lib")
 
     set(GLIB_INCLUDE_DIRS "${GST_ROOT}\\include\\glib-2.0" "${GST_LIB_ROOT}\\glib-2.0\\include")
-    set(GLIB_LIBRARIES "${GST_LIB_ROOT}\\libgobject-2.0.dll.a" "${GST_LIB_ROOT}\\libglib-2.0.dll.a")
+    set(GLIB_LIBRARIES "${GST_LIB_ROOT}\\gobject-2.0.lib" "${GST_LIB_ROOT}\\glib-2.0.lib")
 
     set(JSONGLIB_INCLUDE_DIRS "${GST_ROOT}\\include\\json-glib-1.0")
-    set(JSONGLIB_LIBRARIES "${GST_LIB_ROOT}\\libjson-glib-1.0.dll.a")
+    set(JSONGLIB_LIBRARIES "${GST_LIB_ROOT}\\json-glib-1.0.lib")
 
     set(LIBSOUP_INCLUDE_DIRS "${GST_ROOT}\\include\\libsoup-3.0")
-    set(LIBSOUP_LIBRARIES "${GST_LIB_ROOT}\\libsoup-3.0.dll.a")
+    set(LIBSOUP_LIBRARIES "${GST_LIB_ROOT}\\soup-3.0.lib")
 
     set(GIO_INCLUDE_DIRS "${GST_ROOT}\\include\\gio-win32-2.0")
-    set(GIO_LIBRARIES "${GST_LIB_ROOT}\\libgio-2.0.dll.a")
+    set(GIO_LIBRARIES "${GST_LIB_ROOT}\\gio-2.0.lib")
 endif ()
 
 # Default to PIC code
