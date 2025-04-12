@@ -1,3 +1,5 @@
+Have been merged into [WebRTC Demo](https://github.com/floppyhammer/gst-webrtc-server).
+
 # GStreamer WebRTC Client
 
 This is a test client on Linux. See the compatible [server](https://github.com/floppyhammer/gst-webrtc-server).
